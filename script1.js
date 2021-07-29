@@ -210,9 +210,20 @@ function drawGame(){
     })
 
     // Enemies
-    enemies.forEach((enemy) => {
+    // Remember foreEach does automatic indexing of the second arugment
+    enemies.forEach((enemy, index) => {
         enemy.update()
         //Nested loop to check the distance to each one of our projectiles
+        projectiles.forEach((projectile, projectileIndex) => {
+            const dist =  Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y)
+            
+            //collision detection AKA objects touch eachother
+            if(dist - enemy.radius - projectile.radius < 1){
+                //remove from screen
+                enemies.splice(index, 1)
+                projectiles.splice(projectileIndex, 1)
+            }
+        })
     })
     
     // Update LastFrameTime Global
@@ -220,9 +231,7 @@ function drawGame(){
 
     //Request next animation frame
     window.requestAnimationFrame(drawGame)
-    }
-    
-
+}
 
 drawGame()
 spawnEnemies()        
