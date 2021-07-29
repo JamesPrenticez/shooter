@@ -3,8 +3,8 @@ canvas.width = window.innerWidth
 canvas.height = window.innerHeight
 
 let context = canvas.getContext('2d')
-
-
+let lastFrameTime = 0
+let currentFrameTime = Date.now()
 
 
 class Player{
@@ -28,7 +28,6 @@ let y = canvas.height / 2
 
 let player = new Player(x, y, 30, 'blue')
 
-player.draw()
 
 // Projectiles
 class Projectile {
@@ -51,6 +50,8 @@ class Projectile {
         console.log("bye")
     }
 }
+
+// let projectiles = [projectile]
 
 let projectile = new Projectile(
     player.x,
@@ -75,15 +76,66 @@ canvas.addEventListener('mousedown', (event) => {
     
 })
 
+//Frame Rate
+class Frame {
+    constructor(currentSecond, frameCount, lastFrameTime){
+        this.currentSecond = currentSecond
+        this.frameCount = frameCount
+        this.lastFrameTime = lastFrameTime
+    }
+    draw(framesLastSecond){
+        context.font = 'bold 50px serif';
+        context.fillStyle = "#ff0000"
+        context.fillText("FPS: " + framesLastSecond, 20, 50)
+    }
+    update(){
+        
+        let sec = Math.floor(Date.now()/1000)
+
+        if(sec != this.currentSecond){
+            this.currentSecond = sec
+            this.framesLastSecond = this.frameCount
+            this.frameCount = 1;
+        } else {
+            this.frameCount ++
+        }
+
+       
+
+        this.draw(this.framesLastSecond)
+
+    }
+}
+
+let frame = new Frame(
+    0,
+    0,
+    lastFrameTime
+    )
 
 //Main draw/animate functin
 //requestAnimationFrame will call this function over and over in a loop
-function animate(){
-    requestAnimationFrame(animate)
-    projectile.draw()
-    projectile.update()
-    //console.log("hi")
-}
+function drawGame(){
+    // Clear canvas for redraw
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw Objects on Canvas
+    // player.draw()
+    // projectile.draw()
+    // projectile.update()
+    frame.update()
+    
+    projectiles.forEach(projectile => {
+            projectile.update()
+    })
+    
+    // Update LastFrameTime Global
+    lastFrameTime = currentFrameTime    
+
+    //Request next animation frame
+    window.requestAnimationFrame(drawGame)
+    }
+    
 
 
-animate()
+drawGame()
