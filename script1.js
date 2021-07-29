@@ -28,7 +28,6 @@ let y = canvas.height / 2
 
 let player = new Player(x, y, 30, 'blue')
 
-
 // Projectiles
 class Projectile {
     constructor(x, y, radius, color, velocity){
@@ -45,27 +44,27 @@ class Projectile {
         context.fill()
     }
     update(){
+        this.draw()
         this.x = this.x + this.velocity.x
         this.y = this.y + this.velocity.y
-        console.log("bye")
     }
 }
 
-// let projectiles = [projectile]
-
-let projectile = new Projectile(
-    player.x,
-    player.y,
-    5,
-    'red',
-    {
-        x: 1,
-        y: 1
-    })
+let projectiles = []
 
 //Event Listener - Projectiles - OnMouseDown
 canvas.addEventListener('mousedown', (event) => {
+    //For some reason this function takes y,x not x,y
+    //Take the mouse destination from event
     //console.log(event)
+    let angle = Math.atan2(
+        event.clientY - player.y,
+        event.clientX - player.x)
+    //console.log(angle)
+    let velocity = {
+        x: Math.cos(angle),
+        y: Math.sin(angle)
+    }
     //Instead of using the centre of the screen we use the play x,y
     //event.clientX ----- for cursor
     //event.clientY ----- for cursor
@@ -73,8 +72,62 @@ canvas.addEventListener('mousedown', (event) => {
     //canvas.height / 2 ----- for centre
     //player.x
     //player.y
-    
+    projectiles.push(new Projectile(
+        player.x,
+        player.y,
+        5,
+        'red',
+        velocity
+        )
+    )
 })
+
+// Enemies
+class Enemy {
+    constructor(x, y, radius, color, velocity){
+        this.x = x
+        this.y = y
+        this.radius = radius
+        this.color = color
+        this.velocity = velocity
+    }
+    draw(){
+        context.beginPath()
+        context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)    
+        context.fillStyle = this.color
+        context.fill()
+    }
+    update(){
+        this.draw()
+        this.x = this.x + this.velocity.x
+        this.y = this.y + this.velocity.y
+    }
+}
+
+let enemies = []
+
+function spawnEnemies(){
+    //Instead of using requestAnimationFrame 
+    //We are going to use setInterval
+    setInterval(() => {
+        let x = Math.random() * canvas.width
+        let y = Math.random() * canvas.height
+        let radius = 30
+        let color = 'white'
+
+        let angle = Math.atan2(
+            player.y - y,
+            player.x - x)
+        //console.log(angle)
+        let velocity = {
+            x: Math.cos(angle),
+            y: Math.sin(angle)
+        }
+        enemies.push(new Enemy(x, y, radius, color, velocity))
+
+        console.log(enemies)
+    }, 1000) //every 1 second)
+}
 
 //Frame Rate
 class Frame {
@@ -99,11 +152,7 @@ class Frame {
         } else {
             this.frameCount ++
         }
-
-       
-
         this.draw(this.framesLastSecond)
-
     }
 }
 
@@ -118,15 +167,21 @@ let frame = new Frame(
 function drawGame(){
     // Clear canvas for redraw
     context.clearRect(0, 0, canvas.width, canvas.height);
+    //FPS
+    frame.update()
+    // Player
+    player.draw()
 
-    // Draw Objects on Canvas
-    // player.draw()
+    // Projectile
     // projectile.draw()
     // projectile.update()
-    frame.update()
-    
     projectiles.forEach(projectile => {
-            projectile.update()
+        projectile.update()
+    })
+
+    // Enemies
+    enemies.forEach((enemy) => {
+        enemy.update()
     })
     
     // Update LastFrameTime Global
@@ -139,3 +194,4 @@ function drawGame(){
 
 
 drawGame()
+spawnEnemies()        
