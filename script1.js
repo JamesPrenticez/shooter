@@ -25,7 +25,7 @@ class Player{
         //Draw Player Name
         context.font = 'bold 16px serif';
         context.fillStyle = "gold"
-        context.fillText(playerName, this.x - this.radius + 3, this.y)
+        context.fillText(this.playerName, this.x - this.radius + 3, this.y)
         //Draw Player Healthbar
         context.beginPath();
         context.moveTo(this.x - this.radius, this.y - this.radius - 20);
@@ -36,17 +36,47 @@ class Player{
         //Draw HP text
         context.font = 'bold 12px serif';
         context.fillStyle = "red"
-        context.fillText(hp + "/61", this.x - this.radius + 18, this.y - this.radius - 16, 100)
+        context.fillText(this.hp + "/60", this.x - this.radius + 18, this.y - this.radius - 16, 100)
+    } 
+    update(){
+        this.draw()
     }
 }
 
-// Centre the player
-let x = canvas.width / 2 
-let y = canvas.height / 2 
-let playerName = "player 1"
-let hp = 60 // player radius x2
+let players = []
 
-let player = new Player(playerName, hp, x, y, 30, 'blue')
+//Create New Player
+function newPlayer(){
+    let playerName = "player 1"
+    let hp = 60
+    let radius = 30
+
+    // Centre the player
+    let x = canvas.width / 2 
+    let y = canvas.height / 2 
+    
+    //Spawn in a random start location
+    // if (Math.random() < .5){
+    //     x = Math.random() < 0.5 ?  - radius : canvas.width + radius
+    //     y = Math.random() * canvas.height
+    // } else {
+    //     x = Math.random() * canvas.width
+    //     y = Math.random() < 0.5 ? 0 - radius : canvas.height + radius
+    // }
+
+    //Static Color
+    let color = "blue"
+    //Random Color
+    //let randomHex = Math.floor(Math.random()*16777215).toString(16);
+    //let color = "#" + randomHex;
+
+    players.push(new Player(playerName, hp, x, y, radius, color))
+}
+
+newPlayer()
+let player = players[0]
+console.log(players)
+
 
 // Projectiles
 class Projectile {
@@ -200,7 +230,7 @@ function drawGame(){
     //FPS
     frame.update()
     // Player
-    player.draw()
+    player.update()
 
     // Projectile
     // projectile.draw()
@@ -209,9 +239,29 @@ function drawGame(){
         projectile.update()
     })
 
+    // Player Takes Damage from Emeny
+    players.forEach((player, playerIndex) => {
+        enemies.forEach((enemy, enemyIndex) => {
+            const dist =  Math.hypot(player.x - enemy.x, player.y - enemy.y)
+            
+            console.log(enemy.radius - player.radius)
+            //collision detection AKA objects touch eachother
+            //console.log(dist - enemy.radius - player.radius < 1)
+            if(dist - enemy.radius - player.radius < 1){
+                if(players[playerIndex].hp > 0){
+                //reduce hp by 1
+                players[playerIndex].hp -= 1
+                console.log(players[playerIndex].hp)
+                } else {
+                    console.log("hit")
+                } 
+            }
+        })
+    })
+
     // Enemies
     // Remember foreEach does automatic indexing of the second arugment
-    enemies.forEach((enemy, index) => {
+    enemies.forEach((enemy, enemyIndex) => {
         enemy.update()
         //Nested loop to check the distance to each one of our projectiles
         projectiles.forEach((projectile, projectileIndex) => {
@@ -220,7 +270,7 @@ function drawGame(){
             //collision detection AKA objects touch eachother
             if(dist - enemy.radius - projectile.radius < 1){
                 //remove from screen
-                enemies.splice(index, 1)
+                enemies.splice(enemyIndex, 1)
                 projectiles.splice(projectileIndex, 1)
             }
         })
@@ -235,3 +285,4 @@ function drawGame(){
 
 drawGame()
 spawnEnemies()        
+
