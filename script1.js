@@ -75,7 +75,7 @@ function newPlayer(){
     // }
 
     //Static Color
-    let color = "blue"
+    let color = 'white'
     //Random Color
     //let randomHex = Math.floor(Math.random()*16777215).toString(16);
     //let color = "#" + randomHex;
@@ -134,7 +134,7 @@ console.log(projectiles)
             player.x,
             player.y,
             5,
-            'red',
+            'hsl(0, 0%, 100%)',
             velocity
             )
         )
@@ -194,7 +194,7 @@ function spawnEnemies(){
             y = Math.random() < 0.5 ? 0 - radius : canvas.height + radius
         }
 
-        let color = 'white'
+        let color = `hsl(${Math.random() * 360}, 75%, 50%)`
 
         let angle = Math.atan2(
             player.y - y,
