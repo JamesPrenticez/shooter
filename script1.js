@@ -110,9 +110,18 @@ function spawnEnemies(){
     //Instead of using requestAnimationFrame 
     //We are going to use setInterval
     setInterval(() => {
-        let x = Math.random() * canvas.width
-        let y = Math.random() * canvas.height
         let radius = 30
+        let x 
+        let y
+
+        if (Math.random() < .5){
+            x = Math.random() < 0.5 ? 0 - radius : canvas.width + radius
+            y = Math.random() * canvas.height
+        } else {
+            x = Math.random() * canvas.width
+            y = Math.random() < 0.5 ? 0 - radius : canvas.height + radius
+        }
+
         let color = 'white'
 
         let angle = Math.atan2(
