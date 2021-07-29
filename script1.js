@@ -124,10 +124,10 @@ console.log(projectiles)
         event.clientY - player.y,
         event.clientX - player.x)
 
-
+    // Multiply by factor to increase shooting speeds =)
         let velocity = {
-            x: Math.cos(angle),
-            y: Math.sin(angle)
+            x: Math.cos(angle) * 4,
+            y: Math.sin(angle) * 4
         }
 
         projectiles.push(new Projectile(
@@ -253,10 +253,13 @@ function animate(){
     // Animation ID 
     animationID = requestAnimationFrame(animate)
 
-    // Clear canvas for redraw
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    //Redraw Background
+    context.fillStyle = 'rgba(0, 0, 0, 0.1)'
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
     //FPS
     frame.update()
+
     // Player
     player.update()
 
