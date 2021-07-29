@@ -8,9 +8,11 @@ let currentFrameTime = Date.now()
 
 
 class Player{
-    constructor(playerName, hp, x, y, radius, color) {
+    constructor(playerName, hp, killCount, ammo, x, y, radius, color) {
         this.playerName = playerName
         this.hp = hp
+        this.killCount = killCount
+        this.ammo = ammo
         this.x = x
         this.y = y
         this.radius = radius
@@ -39,6 +41,14 @@ class Player{
         context.fillText(this.hp + "/60", this.x - this.radius + 18, this.y - this.radius - 16, 100)
     } 
     update(){
+        // Draw Kill Count
+        context.font = 'bold 16px serif';
+        context.fillStyle = "gold"
+        context.fillText("Kill Count: " + this.killCount,20, 100)
+        // Draw Ammo
+        context.font = 'bold 16px serif';
+        context.fillStyle = "gold"
+        context.fillText("Ammunition: " + this.ammo,20, 150)
         this.draw()
     }
 }
@@ -48,7 +58,7 @@ let players = []
 //Create New Player
 function newPlayer(){
     let playerName = "player 1"
-    let hp = 60
+    let hp = 10
     let radius = 30
 
     // Centre the player
@@ -70,12 +80,16 @@ function newPlayer(){
     //let randomHex = Math.floor(Math.random()*16777215).toString(16);
     //let color = "#" + randomHex;
 
-    players.push(new Player(playerName, hp, x, y, radius, color))
+    let killCount = 0
+    let ammo = 100
+
+    // (playerName, hp, killCount, ammo, x, y, radius, color) {
+    players.push(new Player(playerName, hp, killCount, ammo, x, y, radius, color))
 }
 
 newPlayer()
 let player = players[0]
-console.log(players)
+//console.log(players)
 
 
 // Projectiles
@@ -104,17 +118,32 @@ let projectiles = []
 
 //Event Listener - Projectiles - OnMouseDown
 canvas.addEventListener('mousedown', (event) => {
-    //For some reason this function takes y,x not x,y
-    //Take the mouse destination from event
-    //console.log(event)
+console.log(projectiles)
+
     let angle = Math.atan2(
         event.clientY - player.y,
         event.clientX - player.x)
+
+
+        let velocity = {
+            x: Math.cos(angle),
+            y: Math.sin(angle)
+        }
+
+        projectiles.push(new Projectile(
+            player.x,
+            player.y,
+            5,
+            'red',
+            velocity
+            )
+        )
+
     //console.log(angle)
-    let velocity = {
-        x: Math.cos(angle),
-        y: Math.sin(angle)
-    }
+    //For some reason this function takes y,x not x,y
+    //Take the mouse destination from event
+    //console.log(event)
+    
     //Instead of using the centre of the screen we use the play x,y
     //event.clientX ----- for cursor
     //event.clientY ----- for cursor
@@ -122,14 +151,6 @@ canvas.addEventListener('mousedown', (event) => {
     //canvas.height / 2 ----- for centre
     //player.x
     //player.y
-    projectiles.push(new Projectile(
-        player.x,
-        player.y,
-        5,
-        'red',
-        velocity
-        )
-    )
 })
 
 // Enemies
@@ -185,7 +206,7 @@ function spawnEnemies(){
         }
         enemies.push(new Enemy(x, y, radius, color, velocity))
 
-        console.log(enemies)
+        //console.log(enemies)
     }, 1000) //every 1 second)
 }
 
@@ -222,9 +243,16 @@ let frame = new Frame(
     lastFrameTime
     )
 
+
+//
+let animationID
+
 //Main draw/animate functin
 //requestAnimationFrame will call this function over and over in a loop
-function drawGame(){
+function animate(){
+    // Animation ID 
+    animationID = requestAnimationFrame(animate)
+
     // Clear canvas for redraw
     context.clearRect(0, 0, canvas.width, canvas.height);
     //FPS
@@ -235,54 +263,73 @@ function drawGame(){
     // Projectile
     // projectile.draw()
     // projectile.update()
-    projectiles.forEach(projectile => {
+    projectiles.forEach((projectile, projectileIndex) => {
         projectile.update()
+        //Preform collision detection with the edge of canvas
+        //So that we are not waasting computational power on things we can't even see!
+        if(
+            projectile.x + projectile.radius < 0                ||
+            projectile.x - projectile.radius > canvas.width     ||
+            projectile.y + projectile.radius < 0                ||
+            projectile.y - projectile.radius > canvas.height    
+            ) {
+            setTimeout(() => {
+                projectiles.splice(projectileIndex, 1)
+            }, 0)
+        }
     })
 
+    // Player Does Damage to Enemies
+    // Remember foreEach does automatic indexing of the second arugment
+    players.forEach((player, playerIndex) => {
+        enemies.forEach((enemy, enemyIndex) => {
+            enemy.update()
+            //Nested loop to check the distance to each one of our projectiles
+            projectiles.forEach((projectile, projectileIndex) => {
+                const dist =  Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y)
+                
+                //collision detection AKA objects touch eachother
+                if(dist - enemy.radius - projectile.radius < 1){
+                    //remove from screen
+                    enemies.splice(enemyIndex, 1)
+                    projectiles.splice(projectileIndex, 1)
+                    //Update enemy death on the score card
+                    players[playerIndex].killCount += 1
+                }
+            })
+        })
+    })
+    
     // Player Takes Damage from Emeny
     players.forEach((player, playerIndex) => {
         enemies.forEach((enemy, enemyIndex) => {
             const dist =  Math.hypot(player.x - enemy.x, player.y - enemy.y)
             
-            console.log(enemy.radius - player.radius)
+            //console.log(enemy.radius - player.radius)
             //collision detection AKA objects touch eachother
             //console.log(dist - enemy.radius - player.radius < 1)
             if(dist - enemy.radius - player.radius < 1){
-                if(players[playerIndex].hp > 0){
-                //reduce hp by 1
-                players[playerIndex].hp -= 1
-                console.log(players[playerIndex].hp)
+                if(players[playerIndex].hp == 1){
+                    //Stop game on this specific frame
+                    cancelAnimationFrame(animationID)
+                    console.log("end game")
                 } else {
-                    console.log("hit")
+                    //reduce hp by 1
+                    players[playerIndex].hp -= 1
+                    //Remove the enemy that did the damage
+                    enemies.splice(enemyIndex, 1)
                 } 
             }
         })
     })
 
-    // Enemies
-    // Remember foreEach does automatic indexing of the second arugment
-    enemies.forEach((enemy, enemyIndex) => {
-        enemy.update()
-        //Nested loop to check the distance to each one of our projectiles
-        projectiles.forEach((projectile, projectileIndex) => {
-            const dist =  Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y)
-            
-            //collision detection AKA objects touch eachother
-            if(dist - enemy.radius - projectile.radius < 1){
-                //remove from screen
-                enemies.splice(enemyIndex, 1)
-                projectiles.splice(projectileIndex, 1)
-            }
-        })
-    })
-    
     // Update LastFrameTime Global
     lastFrameTime = currentFrameTime    
 
     //Request next animation frame
-    window.requestAnimationFrame(drawGame)
+   // window.requestAnimationFrame(animate)
 }
 
-drawGame()
+animate()
 spawnEnemies()        
 
