@@ -8,25 +8,45 @@ let currentFrameTime = Date.now()
 
 
 class Player{
-    constructor(x, y, radius, color) {
+    constructor(playerName, hp, x, y, radius, color) {
+        this.playerName = playerName
+        this.hp = hp
         this.x = x
         this.y = y
         this.radius = radius
         this.color = color
     }
     draw(){
+        //Draw Blue Sphere Player Object
         context.beginPath()
         context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)    
         context.fillStyle = this.color
         context.fill()
+        //Draw Player Name
+        context.font = 'bold 16px serif';
+        context.fillStyle = "gold"
+        context.fillText(playerName, this.x - this.radius + 3, this.y)
+        //Draw Player Healthbar
+        context.beginPath();
+        context.moveTo(this.x - this.radius, this.y - this.radius - 20);
+        context.lineTo(this.x - this.radius + this.hp, this.y - this.radius - 20);
+        context.strokeStyle = "#33FF00";
+        context.lineWidth = 12;
+        context.stroke();
+        //Draw HP text
+        context.font = 'bold 12px serif';
+        context.fillStyle = "red"
+        context.fillText(hp + "/61", this.x - this.radius + 18, this.y - this.radius - 16, 100)
     }
 }
 
 // Centre the player
 let x = canvas.width / 2 
 let y = canvas.height / 2 
+let playerName = "player 1"
+let hp = 60 // player radius x2
 
-let player = new Player(x, y, 30, 'blue')
+let player = new Player(playerName, hp, x, y, 30, 'blue')
 
 // Projectiles
 class Projectile {
@@ -110,7 +130,8 @@ function spawnEnemies(){
     //Instead of using requestAnimationFrame 
     //We are going to use setInterval
     setInterval(() => {
-        let radius = 30
+        let radius = Math.random() * (30 - 10) + 10
+
         let x 
         let y
 
@@ -191,6 +212,7 @@ function drawGame(){
     // Enemies
     enemies.forEach((enemy) => {
         enemy.update()
+        //Nested loop to check the distance to each one of our projectiles
     })
     
     // Update LastFrameTime Global
