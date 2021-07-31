@@ -293,11 +293,16 @@ function animate(){
                 
                 //collision detection AKA objects touch eachother
                 if(dist - enemy.radius - projectile.radius < 1){
-                    //remove from screen
-                    enemies.splice(enemyIndex, 1)
-                    projectiles.splice(projectileIndex, 1)
-                    //Update enemy death on the score card
-                    players[playerIndex].killCount += 1
+                    if(enemy.radius - 10 > 10){
+                        enemy.radius -= 10
+                        projectiles.splice(projectileIndex, 1)
+                    } else {
+                        //remove from screen
+                        enemies.splice(enemyIndex, 1)
+                        projectiles.splice(projectileIndex, 1)
+                        //Update enemy death on the score card
+                        players[playerIndex].killCount += 1
+                    }
                 }
             })
         })
