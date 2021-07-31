@@ -1,3 +1,4 @@
+//console.log(gsap)
 let canvas = document.getElementById('canvas')
 canvas.width = window.innerWidth
 canvas.height = window.innerHeight
@@ -25,9 +26,9 @@ class Player{
         context.fillStyle = this.color
         context.fill()
         //Draw Player Name
-        context.font = 'bold 16px serif';
-        context.fillStyle = "gold"
-        context.fillText(this.playerName, this.x - this.radius + 3, this.y)
+        context.font = 'bold 12px verdana';
+        context.fillStyle = "black"
+        context.fillText(this.playerName, this.x - this.radius + 3, this.y + 3)
         //Draw Player Healthbar
         context.beginPath();
         context.moveTo(this.x - this.radius, this.y - this.radius - 20);
@@ -177,6 +178,40 @@ class Enemy {
 
 let enemies = []
 
+// Enemies Explode
+class Particle {
+    constructor(x, y, radius, color, velocity, alpha){
+        this.x = x
+        this.y = y
+        this.radius = radius
+        this.color = color
+        this.velocity = velocity
+        this.alpha = 1 //make particles disappear
+    }
+    draw(){
+        //Using canvas to edit opacity values is a little tricky
+        //We need to call save which puts us in this kinda state
+        //Where we can call a canvas global function
+        //But its only going to effect the code in this function locally
+        context.save()//need this
+        context.globalAlpha = this.alpha // to change this
+        context.beginPath()
+        context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)    
+        context.fillStyle = this.color
+        context.fill()
+        context.restore()//need this
+    }
+    update(){
+        this.draw()
+        this.x = this.x + this.velocity.x
+        this.y = this.y + this.velocity.y
+        this.alpha -= 0.01
+    }
+}
+
+let particles = []
+
+
 function spawnEnemies(){
     //Instead of using requestAnimationFrame 
     //We are going to use setInterval
@@ -281,6 +316,14 @@ function animate(){
             }, 0)
         }
     })
+    //Explosions for Particles when projectiles kill enmey
+    particles.forEach((particle, particlesIndex) =>  {
+        if(particle.alpha <=0) {
+            particles.splice(particlesIndex, 1)
+        } else{
+        particle.update()
+        }
+    })
 
     // Player Does Damage to Enemies
     // Remember foreEach does automatic indexing of the second arugment
@@ -293,8 +336,16 @@ function animate(){
                 
                 //collision detection AKA objects touch eachother
                 if(dist - enemy.radius - projectile.radius < 1){
-                    if(enemy.radius - 10 > 10){
-                        enemy.radius -= 10
+                    //Make enemy explode
+                    for (let i = 0; i < 8; i++){
+                        particles.push(new Particle(projectile.x, projectile.y, 3, enemy.color, {x: Math.random() - 0.5, y: Math.random() - 0.5}))
+                    }
+                    
+                    //Shrink Enemy on hit
+                    if(enemy.radius - 10 > 5){
+                        gsap.to(enemy, {
+                            radius: enemy.radius - 10
+                        })
                         projectiles.splice(projectileIndex, 1)
                     } else {
                         //remove from screen
