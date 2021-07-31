@@ -9,7 +9,7 @@ let currentFrameTime = Date.now()
 
 
 class Player{
-    constructor(playerName, hp, killCount, ammo, x, y, radius, color) {
+    constructor(playerName, hp, killCount, ammo, x, y, radius, color, velocity) {
         this.playerName = playerName
         this.hp = hp
         this.killCount = killCount
@@ -18,6 +18,7 @@ class Player{
         this.y = y
         this.radius = radius
         this.color = color
+        this.velocity = velocity
     }
     draw(){
         //Draw Blue Sphere Player Object
@@ -25,32 +26,34 @@ class Player{
         context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)    
         context.fillStyle = this.color
         context.fill()
-        //Draw Player Name
-        context.font = 'bold 12px verdana';
-        context.fillStyle = "black"
-        context.fillText(this.playerName, this.x - this.radius + 3, this.y + 3)
-        //Draw Player Healthbar
-        context.beginPath();
-        context.moveTo(this.x - this.radius, this.y - this.radius - 20);
-        context.lineTo(this.x - this.radius + this.hp, this.y - this.radius - 20);
-        context.strokeStyle = "#33FF00";
-        context.lineWidth = 12;
-        context.stroke();
-        //Draw HP text
-        context.font = 'bold 12px serif';
-        context.fillStyle = "red"
-        context.fillText(this.hp + "/60", this.x - this.radius + 18, this.y - this.radius - 16, 100)
+        // //Draw Player Name
+        // context.font = 'bold 12px verdana';
+        // context.fillStyle = "green"
+        // context.fillText(this.playerName, this.x - this.radius + 3, this.y + 3)
+        // //Draw Player Healthbar
+        // context.beginPath();
+        // context.moveTo(this.x - this.radius, this.y - this.radius - 20);
+        // context.lineTo(this.x - this.radius + this.hp, this.y - this.radius - 20);
+        // context.strokeStyle = "#33FF00";
+        // context.lineWidth = 12;
+        // context.stroke();
+        // //Draw HP text
+        // context.font = 'bold 12px serif';
+        // context.fillStyle = "red"
+        // context.fillText(this.hp + "/60", this.x - this.radius + 18, this.y - this.radius - 16, 100)
     } 
     update(){
-        // Draw Kill Count
-        context.font = 'bold 16px serif';
-        context.fillStyle = "gold"
-        context.fillText("Kill Count: " + this.killCount,20, 100)
-        // Draw Ammo
-        context.font = 'bold 16px serif';
-        context.fillStyle = "gold"
-        context.fillText("Ammunition: " + this.ammo,20, 150)
+        // // Draw Kill Count
+        // context.font = 'bold 16px serif';
+        // context.fillStyle = "gold"
+        // context.fillText("Kill Count: " + this.killCount,20, 100)
+        // // Draw Ammo
+        // context.font = 'bold 16px serif';
+        // context.fillStyle = "gold"
+        // context.fillText("Ammunition: " + this.ammo,20, 150)
         this.draw()
+        this.x = this.x + this.velocity.x
+        this.y = this.y + this.velocity.y
     }
 }
 
@@ -83,14 +86,66 @@ function newPlayer(){
 
     let killCount = 0
     let ammo = 100
+    let velocity = {
+        x: 0,
+        y: 0
+    }
 
     // (playerName, hp, killCount, ammo, x, y, radius, color) {
-    players.push(new Player(playerName, hp, killCount, ammo, x, y, radius, color))
+    players.push(new Player(playerName, hp, killCount, ammo, x, y, radius, color, velocity))
 }
 
 newPlayer()
 let player = players[0]
 //console.log(players)
+
+// Move Player
+canvas.addEventListener('keydown', (event) => {
+    let canvasX = canvas.width
+
+    // Up - W Key
+        if(event.keyCode == "87" && player.y  > 0 + player.radius){
+            console.log(player.y)
+            player.velocity.y -= 3;
+            console.log('up')
+        }
+        
+    // Left - A Key
+        if(event.keyCode == "65" && player.x  > 0 + player.radius){
+            player.velocity.x -= 3;
+            console.log('left')
+        }
+    // Down - S Key
+        if(event.keyCode == "83" && player.y  > 0 + player.radius){
+            player.velocity.y += 3;
+            console.log('down')
+        }
+    // Right - D Key  
+        if(event.keyCode == "68" && player.x  < 0 + canvasX ){
+            player.velocity.x += 3;
+            console.log('right')
+        } return false
+    })
+
+//Stop Player
+canvas.addEventListener('keyup', (event) => {
+    player.velocity.x = 0;
+    player.velocity.y = 0;
+})
+
+        // if(event.keyCode[87] && player.y > 2){
+        //   player.y -= player.velocity;
+        // }
+        // if(keys[83] && player1.y < (HEIGHT - player1.h - 2)){
+        //   player1.y += SPEED;
+        // }
+        // if(keys[65] && player1.x > 2){
+        //   player1.x -= SPEED;
+        // }
+        // if(keys[68] && player1.x < (WIDTH - player1.w - 2)){
+        //   player1.x += SPEED;
+        // } else return 
+
 
 
 // Projectiles
@@ -130,6 +185,7 @@ console.log(projectiles)
             x: Math.cos(angle) * 4,
             y: Math.sin(angle) * 4
         }
+        console.log(velocity)
 
         projectiles.push(new Projectile(
             player.x,
@@ -171,6 +227,7 @@ class Enemy {
     }
     update(){
         this.draw()
+        
         this.x = this.x + this.velocity.x
         this.y = this.y + this.velocity.y
     }
@@ -179,6 +236,8 @@ class Enemy {
 let enemies = []
 
 // Enemies Explode
+let friction = 0.99
+
 class Particle {
     constructor(x, y, radius, color, velocity, alpha){
         this.x = x
@@ -203,8 +262,10 @@ class Particle {
     }
     update(){
         this.draw()
-        this.x = this.x + this.velocity.x
-        this.y = this.y + this.velocity.y
+        this.velocity.x = this.velocity.x * friction
+        this.velocity.y = this.velocity.y * friction
+        this.x = this.x + this.velocity.x //here calculate direction away from player
+        this.y = this.y + this.velocity.y 
         this.alpha -= 0.01
     }
 }
@@ -289,7 +350,7 @@ function animate(){
     animationID = requestAnimationFrame(animate)
 
     //Redraw Background
-    context.fillStyle = 'rgba(0, 0, 0, 0.1)'
+    context.fillStyle = 'rgba(0, 0, 0)'
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     //FPS
@@ -336,9 +397,17 @@ function animate(){
                 
                 //collision detection AKA objects touch eachother
                 if(dist - enemy.radius - projectile.radius < 1){
-                    //Make enemy explode
-                    for (let i = 0; i < 8; i++){
-                        particles.push(new Particle(projectile.x, projectile.y, 3, enemy.color, {x: Math.random() - 0.5, y: Math.random() - 0.5}))
+                    //Create Particles to Make enemy explode
+                    for (let i = 0; i < enemy.radius * 8; i++){
+                        particles.push(new Particle(
+                            projectile.x,
+                            projectile.y,
+                            Math.random() * 2,
+                            enemy.color,
+                            {
+                                x: (Math.random() - 0.5) * (Math.random() * 4),
+                                y: (Math.random() - 0.5) * (Math.random() * 4)}
+                            ))
                     }
                     
                     //Shrink Enemy on hit

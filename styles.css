@@ -8,6 +8,10 @@ position:relative;
 background: green;
 }
 
+canvas:target {
+    display: none;
+  }
+
 #holder {
 display:block;
 margin: 20px auto 0 auto;

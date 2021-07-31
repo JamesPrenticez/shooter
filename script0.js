@@ -85,7 +85,7 @@ function init(){
     
     canvas.addEventListener('keydown', keyDown)
     canvas.addEventListener('keyup', keyUp)
-    canvas.onmousedown('mousedown', mouseDown)
+ 
 
     //detect mouse moving
     //grab mouse position and update mouse object
