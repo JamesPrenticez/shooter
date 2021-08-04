@@ -9,11 +9,10 @@ let currentFrameTime = Date.now()
 
 
 class Player{
-    constructor(playerName, hp, killCount, ammo, x, y, radius, color, velocity) {
+    constructor(playerName, hp, killCount, x, y, radius, color, velocity) {
         this.playerName = playerName
         this.hp = hp
         this.killCount = killCount
-        this.ammo = ammo
         this.x = x
         this.y = y
         this.radius = radius
@@ -26,31 +25,27 @@ class Player{
         context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)    
         context.fillStyle = this.color
         context.fill()
-        // //Draw Player Name
-        // context.font = 'bold 12px verdana';
-        // context.fillStyle = "green"
-        // context.fillText(this.playerName, this.x - this.radius + 3, this.y + 3)
-        // //Draw Player Healthbar
-        // context.beginPath();
-        // context.moveTo(this.x - this.radius, this.y - this.radius - 20);
-        // context.lineTo(this.x - this.radius + this.hp, this.y - this.radius - 20);
-        // context.strokeStyle = "#33FF00";
-        // context.lineWidth = 12;
-        // context.stroke();
-        // //Draw HP text
-        // context.font = 'bold 12px serif';
-        // context.fillStyle = "red"
-        // context.fillText(this.hp + "/60", this.x - this.radius + 18, this.y - this.radius - 16, 100)
+        //Draw Player Name
+        context.font = 'bold 12px verdana';
+        context.fillStyle = "green"
+        context.fillText(this.playerName, this.x - this.radius + 3, this.y + 3)
+        //Draw Player Healthbar
+        context.beginPath();
+        context.moveTo(this.x - this.radius, this.y - this.radius - 20);
+        context.lineTo(this.x - this.radius + this.hp * 6, this.y - this.radius - 20);
+        context.strokeStyle = "#33FF00";
+        context.lineWidth = 12;
+        context.stroke();
+        //Draw HP text
+        context.font = 'bold 12px serif';
+        context.fillStyle = "red"
+        context.fillText(this.hp + "/10", this.x - this.radius + 18, this.y - this.radius - 16, 100)
+        // Draw Kill Count
+        context.font = 'bold 16px serif';
+        context.fillStyle = "gold"
+        context.fillText("Kill Count: " + this.killCount, 20, 100)
     } 
     update(){
-        // // Draw Kill Count
-        // context.font = 'bold 16px serif';
-        // context.fillStyle = "gold"
-        // context.fillText("Kill Count: " + this.killCount,20, 100)
-        // // Draw Ammo
-        // context.font = 'bold 16px serif';
-        // context.fillStyle = "gold"
-        // context.fillText("Ammunition: " + this.ammo,20, 150)
         this.draw()
         this.x = this.x + this.velocity.x
         this.y = this.y + this.velocity.y
@@ -61,13 +56,13 @@ let players = []
 
 //Create New Player
 function newPlayer(){
-    let playerName = "player 1"
-    let hp = 10
-    let radius = 30
+    var playerName = "player 1"
+    var hp = 10
+    var radius = 30
 
     // Centre the player
-    let x = canvas.width / 2 
-    let y = canvas.height / 2 
+    var x = canvas.width / 2 
+    var y = canvas.height / 2 
     
     //Spawn in a random start location
     // if (Math.random() < .5){
@@ -79,20 +74,20 @@ function newPlayer(){
     // }
 
     //Static Color
-    let color = 'white'
+    var color = 'white'
     //Random Color
     //let randomHex = Math.floor(Math.random()*16777215).toString(16);
     //let color = "#" + randomHex;
 
-    let killCount = 0
-    let ammo = 100
-    let velocity = {
+    var killCount = 0
+    var ammo = 100
+    var velocity = {
         x: 0,
         y: 0
     }
 
     // (playerName, hp, killCount, ammo, x, y, radius, color) {
-    players.push(new Player(playerName, hp, killCount, ammo, x, y, radius, color, velocity))
+    players.push(new Player(playerName, hp, killCount, x, y, radius, color, velocity))
 }
 
 newPlayer()
@@ -101,36 +96,48 @@ let player = players[0]
 
 // Move Player
 canvas.addEventListener('keydown', (event) => {
-    let canvasX = canvas.width
-
+    
     // Up - W Key
-        if(event.keyCode == "87" && player.y  > 0 + player.radius){
-            console.log(player.y)
-            player.velocity.y -= 3;
-            console.log('up')
+        if(event.key == "w" && player.y  > 0 + player.radius){
+            player.velocity.y =- 3;
+            //console.log(player.velocity.y)
         }
         
     // Left - A Key
-        if(event.keyCode == "65" && player.x  > 0 + player.radius){
-            player.velocity.x -= 3;
-            console.log('left')
+        if(event.key == "a" && player.x  > 0 + player.radius){
+            player.velocity.x =- 3;
         }
     // Down - S Key
-        if(event.keyCode == "83" && player.y  > 0 + player.radius){
-            player.velocity.y += 3;
-            console.log('down')
+        if(event.key == "s" && player.y  < canvas.height - player.radius){
+            player.velocity.y =+ 3;
+            console.log(canvas.height)
+            console.log(player.y)
         }
     // Right - D Key  
-        if(event.keyCode == "68" && player.x  < 0 + canvasX ){
-            player.velocity.x += 3;
-            console.log('right')
-        } return false
+        if(event.key == "d" && player.x  < canvas.width - player.radius){
+            player.velocity.x =+ 3;
+        } 
     })
 
 //Stop Player
 canvas.addEventListener('keyup', (event) => {
-    player.velocity.x = 0;
-    player.velocity.y = 0;
+        // Up - W Key
+        if(event.key == "w"){
+            player.velocity.y = 0;
+        }
+        
+    // Left - A Key
+        if(event.key == "a"){
+            player.velocity.x = 0;
+        }
+    // Down - S Key
+        if(event.key == "s"){
+            player.velocity.y = 0;
+        }
+    // Right - D Key  
+        if(event.key == "d"){
+            player.velocity.x = 0;
+        } 
 })
 
         // if(event.keyCode[87] && player.y > 2){
@@ -174,7 +181,7 @@ let projectiles = []
 
 //Event Listener - Projectiles - OnMouseDown
 canvas.addEventListener('mousedown', (event) => {
-console.log(projectiles)
+//console.log(projectiles)
 
     let angle = Math.atan2(
         event.clientY - player.y,
@@ -185,7 +192,7 @@ console.log(projectiles)
             x: Math.cos(angle) * 4,
             y: Math.sin(angle) * 4
         }
-        console.log(velocity)
+        //console.log(velocity)
 
         projectiles.push(new Projectile(
             player.x,
@@ -227,7 +234,6 @@ class Enemy {
     }
     update(){
         this.draw()
-        
         this.x = this.x + this.velocity.x
         this.y = this.y + this.velocity.y
     }
@@ -262,8 +268,6 @@ class Particle {
     }
     update(){
         this.draw()
-        this.velocity.x = this.velocity.x * friction
-        this.velocity.y = this.velocity.y * friction
         this.x = this.x + this.velocity.x //here calculate direction away from player
         this.y = this.y + this.velocity.y 
         this.alpha -= 0.01
@@ -350,7 +354,7 @@ function animate(){
     animationID = requestAnimationFrame(animate)
 
     //Redraw Background
-    context.fillStyle = 'rgba(0, 0, 0)'
+    context.fillStyle = 'rgba(0, 0, 0, 0.1)'
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     //FPS
