@@ -13,8 +13,12 @@ container{
 
 canvas { 
   display: block;
-  border: solid 1px gold;
-  background: black;
+  background: #dadada;
+  margin: 8px;
+}
+
+canvas:focus {
+  outline: green solid 5px;
 }
 
 canvas:target {

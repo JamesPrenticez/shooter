@@ -1,8 +1,11 @@
 class Canvas {
   constructor(element, width, height) {
     this.canvas = element;
-    this.canvas.width = width;
-    this.canvas.height = height;
+    this.width = width;
+    this.height = height;
+
+    this.canvas.width = this.width;
+    this.canvas.height = this.height;
     this.ctx = this.canvas.getContext("2d");
     this.ctx.imageSmoothingEnabled = true;
 

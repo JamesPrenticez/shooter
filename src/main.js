@@ -4,14 +4,22 @@ import { createNewPlayer } from "./player/player.js"
 
 const canvas = createCanvas({ 
   element: document.querySelector("canvas"),
-  width: 480,
-  height: 270
+  // width: 480,
+  // height: 270
+  width: 512,
+  height: 512
 });
 
+console.log(canvas)
+
 const player = createNewPlayer({
-  context: canvas.ctx,
-  name: "player1"
+  ctx: canvas.ctx,
+  name: "player1",
+  x: canvas.width / 2,
+  y: canvas.height / 2,
 });
+
+console.log(player)
 
 // Game Loop
 let animationId;
@@ -19,6 +27,7 @@ let isPlaying = false;
 
 function gameLoop(){
   canvas.clear();
+  canvas.ctx.imageSmoothingEnabled = true;
   canvas.drawFrameRate();
 
   // Player
