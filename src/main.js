@@ -15,7 +15,7 @@ console.log(canvas)
 const player = createNewPlayer({
   ctx: canvas.ctx,
   name: "player1",
-  x: 32, // canvas.width / 2,
+  x: canvas.width / 2,
   y: canvas.height / 2,
 });
 

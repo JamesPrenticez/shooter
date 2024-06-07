@@ -44,6 +44,7 @@ class Player {
     this.frameScale = 0.5;
 
     this.action = "idle"
+    this.facingRight = true;
 
     /*===============
      * Player
@@ -86,18 +87,34 @@ class Player {
     // Calculate the x coordinate for the source image based on the current frame
     const sourceX = (this.frameCurrent * this.frameWidth) + this.frameXOffset;
     const sourceY = (this.frameRow * this.frameHeight) + this.frameYOffset;
+    const width = this.frameWidth * this.frameScale;
+    const height = this.frameHeight * this.frameScale;
+    const x = this.position.x - 32;
+    const y = this.position.y - 32;
 
-    this.ctx.drawImage(
-      this.img, // image
-      sourceX, // source x
-      sourceY, // source y (assuming the sprite is in the first row)
-      512, // source width
-      512, // source height
-      this.position.x - (32), // x
-      this.position.y - (32), // y
-      this.frameWidth * this.frameScale, // destination width
-      this.frameHeight * this.frameScale, // destination height
-    );
+      this.ctx.save();
+
+  if (this.facingRight) {
+    this.ctx.scale(1, 1);
+    this.ctx.drawImage(this.img, sourceX, sourceY, 512, 512, x, y, width, height);
+  } else {
+    this.ctx.scale(-1, 1);
+    this.ctx.drawImage(this.img, sourceX, sourceY, 512, 512, -x - 64, y, width, height);
+  }
+
+  this.ctx.restore();
+
+    // this.ctx.drawImage(
+    //   this.img, // image
+    //   sourceX, // source x
+    //   sourceY, // source y (assuming the sprite is in the first row)
+    //   512, // source width
+    //   512, // source height
+    //   this.position.x - (32), // x
+    //   this.position.y - (32), // y
+    //   this.frameWidth * this.frameScale, // destination width
+    //   this.frameHeight * this.frameScale, // destination height
+    // );
   
 
   };
@@ -197,6 +214,13 @@ class Player {
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
 
+    // Handle facing right/left
+    if (this.velocity.x > 0) {
+      this.facingRight = true;
+    } else if (this.velocity.x < 0) {
+      this.facingRight = false;
+    }
+
 }
 
   setPlayerAction = () => {
@@ -234,9 +258,9 @@ class Player {
     //       break;
     //   }
 
-      console.log(this.speed)
+      // console.log(this.speed)
 
-      if (this.speed < 0.1) {
+      if (this.speed < 0.4) {
         this.friction = this.walkFriction 
         this.acceleration = this.baseAcceleration
         this.action = 'idle';
