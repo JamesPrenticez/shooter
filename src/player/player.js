@@ -60,6 +60,9 @@ class Player {
     this.img = new Image()
     this.img.src = './player/sprites/spritesheet.png'
 
+    // Inventory
+    this.weapon = null;
+
   }
 
   update = () =>{
@@ -92,17 +95,22 @@ class Player {
     const x = this.position.x - 32;
     const y = this.position.y - 32;
 
-      this.ctx.save();
+    this.ctx.save();
 
-  if (this.facingRight) {
-    this.ctx.scale(1, 1);
-    this.ctx.drawImage(this.img, sourceX, sourceY, 512, 512, x, y, width, height);
-  } else {
-    this.ctx.scale(-1, 1);
-    this.ctx.drawImage(this.img, sourceX, sourceY, 512, 512, -x - 64, y, width, height);
-  }
+    if (this.facingRight) {
+      this.ctx.scale(1, 1);
+      this.ctx.drawImage(this.img, sourceX, sourceY, 512, 512, x, y, width, height);
+    } else {
+      this.ctx.scale(-1, 1);
+      this.ctx.drawImage(this.img, sourceX, sourceY, 512, 512, -x - 64, y, width, height);
+    }
 
-  this.ctx.restore();
+    this.ctx.restore();
+
+    // Draw the weapon if the player has one
+    if (this.weapon) {
+      this.weapon.draw(this.ctx, this.position.x, this.position.y, this.facingRight);
+    }
 
     // this.ctx.drawImage(
     //   this.img, // image
@@ -115,8 +123,6 @@ class Player {
     //   this.frameWidth * this.frameScale, // destination width
     //   this.frameHeight * this.frameScale, // destination height
     // );
-  
-
   };
 
   drawPlayerName = () => {
@@ -143,6 +149,10 @@ class Player {
     this.ctx.font = 'bold 16px serif';
     this.ctx.fillStyle = "gold"
     this.ctx.fillText("Kill Count: " + this.killCount, 20, 100)
+  }
+
+  pickUpWeapon = (weapon) => {
+    this.weapon = weapon;
   }
 
   physics = () => {
@@ -220,8 +230,7 @@ class Player {
     } else if (this.velocity.x < 0) {
       this.facingRight = false;
     }
-
-}
+  }
 
   setPlayerAction = () => {
 
@@ -340,7 +349,6 @@ class Player {
     //   // Add other actions if needed
     // }
   };
-
   playerControls(){
     document.addEventListener('keydown', (e) => {
       switch(e.key){

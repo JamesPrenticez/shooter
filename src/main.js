@@ -1,6 +1,7 @@
 
 import { createCanvas } from "./canvas/canvas.js";
 import { createNewPlayer } from "./player/player.js"
+import { createNewWeapon } from "./weapons/weapon.js";
 
 const canvas = createCanvas({ 
   element: document.querySelector("canvas"),
@@ -10,8 +11,6 @@ const canvas = createCanvas({
   height: 512
 });
 
-console.log(canvas)
-
 const player = createNewPlayer({
   ctx: canvas.ctx,
   name: "player1",
@@ -19,7 +18,16 @@ const player = createNewPlayer({
   y: canvas.height / 2,
 });
 
-console.log(player)
+const weapon = createNewWeapon({
+  name: 'bow',
+  damage: 5,
+  frameScale: 0.15, // 12%
+  frameXOffset: -16,
+  frameYOffset: -16,
+  src: './weapons/sprites/bow.png'
+});
+
+player.pickUpWeapon(weapon);
 
 // Game Loop
 let animationId;
@@ -31,7 +39,7 @@ function gameLoop(){
   canvas.drawFrameRate();
 
   // Player
-  player.update()
+  player.update();
 
   //Request next animation frame
   animationId = requestAnimationFrame(gameLoop)
