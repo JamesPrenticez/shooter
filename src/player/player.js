@@ -9,8 +9,15 @@ class Player {
     this.radius = 10;
     this.color = "#FFF";
     this.velocity = {x: 0, y: 0};
-    this.maxSpeed = 5;
-    this.friction = 0.960;
+    this.speed = 0;
+    this.baseAcceleration = 0.07
+    this.acceleration = 0.07; // Initial acceleration
+    this.accelerationIncrement = 0.0008; // Acceleration increment
+    this.maxAcceleration = 0.14; // Maximum acceleration
+    this.maxSpeed = 3;
+    this.walkFriction = 0.95;
+    this.friction = this.walkFriction;
+    this.runFriction = 0.98;
 
     // Player Controls
     this.playerControls();
@@ -23,9 +30,6 @@ class Player {
     this.space = false;
     this.plus = false;
     this.minus = false;
-
-
-    this.test = 90
 
     // Load sprite images
     this.frameRow = 0; 
@@ -60,8 +64,8 @@ class Player {
   update = () =>{
     this.physics();
     this.movePlayer();
-    this.drawPlayerSprite();
     this.setPlayerAction();
+    this.drawPlayerSprite();
   }
 
   drawPlayerSprite = () => {
@@ -95,21 +99,7 @@ class Player {
       this.frameHeight * this.frameScale, // destination height
     );
   
-    switch (this.action) {
-      case 'idle':
-        this.frameRow = 0;
-        this.frameLength = 7;
-        break;
-      case 'walk':
-        this.frameRow = 1;
-        this.frameLength = 7;
-        break;
-      case 'run':
-        this.frameRow = 2;
-        this.frameLength = 7;
-        break;
-      // Add other actions if needed
-    }
+
   };
 
   drawPlayerName = () => {
@@ -141,77 +131,190 @@ class Player {
   physics = () => {
     this.velocity.x *= this.friction;
     this.velocity.y *= this.friction;
+    
+    // Small threshold to avoid floating-point precision issues
+    const threshold = 0.01;
 
-    this.position.x += this.velocity.x
-    this.position.y += this.velocity.y
+    if (Math.abs(this.velocity.x) < threshold) {
+        this.velocity.x = 0;
+    }
+    if (Math.abs(this.velocity.y) < threshold) {
+        this.velocity.y = 0;
+    }
+
+    // Applying the friction might result in slightly less than maxSpeed
+    // So we normalize it again after friction is applied if it is close to maxSpeed
+    // if (this.speed > this.maxSpeed - threshold) {
+    //     const ratio = this.maxSpeed / this.speed;
+    //     this.velocity.x *= ratio;
+    //     this.velocity.y *= ratio;
+    //     this.speed = this.maxSpeed; // Ensure speed is exactly maxSpeed
+    // }
+
   }
 
   movePlayer = () => {
-    if (this.w && this.velocity.y > -this.maxSpeed) {
-      this.velocity.y -= 0.15;
+    let accelerationX = 0;
+    let accelerationY = 0;
+
+    if (this.w) {
+        accelerationY -= this.acceleration;
     }
-    if (this.a && this.velocity.x > -this.maxSpeed) {
-      this.velocity.x -= 0.15;
+    if (this.a) {
+        accelerationX -= this.acceleration;
+    }
+    if (this.s) {
+        accelerationY += this.acceleration;
+    }
+    if (this.d) {
+        accelerationX += this.acceleration;
     }
 
-    if (this.s && this.velocity.y < this.maxSpeed) {
-      this.velocity.y += 0.15;
+    // Calculate the combined acceleration
+    const combinedAcceleration = Math.sqrt(accelerationX ** 2 + accelerationY ** 2);
+
+    if (combinedAcceleration > 0) {
+      // Normalize acceleration to ensure consistent speed increase
+      accelerationX = (accelerationX / combinedAcceleration) * this.acceleration;
+      accelerationY = (accelerationY / combinedAcceleration) * this.acceleration;
     }
 
-    if (this.d && this.velocity.x < this.maxSpeed) {
-      this.velocity.x += 0.15;
+    this.velocity.x += accelerationX;
+    this.velocity.y += accelerationY;
+
+    // Calculate the combined speed
+    this.speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+    this.speed = Math.round(this.speed * 1000) / 1000; 
+
+    // Normalize the velocity vector if the speed exceeds maxSpeed
+    if (this.speed > this.maxSpeed) {
+        const ratio = this.maxSpeed / this.speed;
+        this.velocity.x *= ratio;
+        this.velocity.y *= ratio;
+        this.speed = this.maxSpeed; // Ensure speed is exactly maxSpeed
     }
-  }
+
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+
+}
 
   setPlayerAction = () => {
-    const speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
-  
-    console.log(speed)
 
-    if (speed < 0.1) {
-      this.action = 'idle';
-    } else if (speed <= 2) {
-      this.action = 'walk';
-    } else {
-      this.action = 'run';
-    }
+
+     // Determine the direction for animation purposes
+    //  let direction = '';
+    //  if (this.w) direction += 'up';
+    //  if (this.s) direction += 'down';
+    //  if (this.a) direction += 'left';
+    //  if (this.d) direction += 'right';
+ 
+    //  // Update the frame row based on the direction
+    //  switch (direction) {
+    //     case 'up':
+    //       this.action = "walk"
+    //       // this.frameRow = 1;
+    //       break;
+    //     case 'down':
+    //       this.action = "walk"
+    //       // this.frameRow = 1;
+    //       break;
+    //     case 'left':
+    //       this.action = "walk"
+    //       // this.frameRow = 1;
+    //       break;
+    //     case 'right':
+    //       this.action = "walk"
+    //       // this.frameRow = 1;
+    //       break;
+    //     // Add other direction cases if needed
+    //     default:
+    //       this.action = "idle"
+    //       //this.frameRow = 0; // Default to idle frame row
+    //       break;
+    //   }
+
+      console.log(this.speed)
+
+      if (this.speed < 0.1) {
+        this.friction = this.walkFriction 
+        this.acceleration = this.baseAcceleration
+        this.action = 'idle';
+      } else if (this.speed <= 1.99) {
+        this.action = 'walk';
+      } else {
+        this.friction = this.runFriction
+        this.action = 'run';
+      }
+
+      switch (this.action) {
+        case 'idle':
+          this.frameRow = 0;
+          this.frameLength = 7;
+          break;
+        case 'walk':
+          this.frameRow = 1;
+          this.frameLength = 7;
+          break;
+        case 'run':
+          this.frameRow = 2;
+          this.frameLength = 7;
+          break;
+        // Add other actions if needed
+      }
   
     // Determine the direction
-    let direction = '';
-    if (this.w) direction += 'up';
-    if (this.s) direction += 'down';
-    if (this.a) direction += 'left';
-    if (this.d) direction += 'right';
+    // let direction = '';
+    // if (this.w) direction += 'up';
+    // if (this.s) direction += 'down';
+    // if (this.a) direction += 'left';
+    // if (this.d) direction += 'right';
   
-    switch (direction) {
-      case 'upright':
-        this.action += '_up_right';
-        break;
-      case 'upleft':
-        this.action += '_up_left';
-        break;
-      case 'downright':
-        this.action += '_down_right';
-        break;
-      case 'downleft':
-        this.action += '_down_left';
-        break;
-      case 'up':
-        this.action += '_up';
-        break;
-      case 'down':
-        this.action += '_down';
-        break;
-      case 'left':
-        this.action += '_left';
-        break;
-      case 'right':
-        this.action += '_right';
-        break;
-      default:
-        // No direction keys are pressed, so keep the action as is
-        break;
-    }
+    // switch (direction) {
+    //   case 'upright':
+    //     this.action += '_up_right';
+    //     break;
+    //   case 'upleft':
+    //     this.action += '_up_left';
+    //     break;
+    //   case 'downright':
+    //     this.action += '_down_right';
+    //     break;
+    //   case 'downleft':
+    //     this.action += '_down_left';
+    //     break;
+    //   case 'up':
+    //     this.action += '_up';
+    //     break;
+    //   case 'down':
+    //     this.action += '_down';
+    //     break;
+    //   case 'left':
+    //     this.action += '_left';
+    //     break;
+    //   case 'right':
+    //     this.action += '_right';
+    //     break;
+    //   default:
+    //     // No direction keys are pressed, so keep the action as is
+    //     break;
+    // }
+
+    // switch (this.action) {
+    //   case 'idle':
+    //     this.frameRow = 0;
+    //     this.frameLength = 7;
+    //     break;
+    //   case 'walk':
+    //     this.frameRow = 1;
+    //     this.frameLength = 7;
+    //     break;
+    //   case 'run':
+    //     this.frameRow = 2;
+    //     this.frameLength = 7;
+    //     break;
+    //   // Add other actions if needed
+    // }
   };
 
   playerControls(){
@@ -230,6 +333,10 @@ class Player {
           this.d = true
           break
       }
+      if (this.acceleration < this.maxAcceleration) {
+        this.acceleration += this.accelerationIncrement;
+      }
+      this.setPlayerAction(); // Update action on key down
     })
     document.addEventListener('keyup', (e) => {
       switch(e.key){
@@ -246,6 +353,8 @@ class Player {
           this.d = false
           break
       }
+      //this.acceleration = this.baseAcceleration; // Reset acceleration when keys are released
+      this.setPlayerAction(); // Update action on key up
     })
   }
 

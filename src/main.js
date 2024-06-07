@@ -6,7 +6,7 @@ const canvas = createCanvas({
   element: document.querySelector("canvas"),
   // width: 480,
   // height: 270
-  width: 512,
+  width: 1042,
   height: 512
 });
 
@@ -15,7 +15,7 @@ console.log(canvas)
 const player = createNewPlayer({
   ctx: canvas.ctx,
   name: "player1",
-  x: canvas.width / 2,
+  x: 32, // canvas.width / 2,
   y: canvas.height / 2,
 });
 
