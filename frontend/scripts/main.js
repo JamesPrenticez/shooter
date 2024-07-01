@@ -2,6 +2,7 @@
 import { createCanvas } from "./canvas/canvas.js";
 import { createNewPlayer } from "./player/player.js"
 import { createNewWeapon } from "./weapons/weapon.js";
+console.log("hi")
 
 const canvas = createCanvas({ 
   element: document.querySelector("canvas"),
@@ -24,7 +25,7 @@ const weapon = createNewWeapon({
   frameScale: 0.15, // 12%
   frameXOffset: -16,
   frameYOffset: -16,
-  src: './weapons/sprites/bow.png'
+  src: "./assets/sprites/weapons/bow.png"
 });
 
 player.pickUpWeapon(weapon);

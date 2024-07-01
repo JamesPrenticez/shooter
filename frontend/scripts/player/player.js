@@ -58,7 +58,8 @@ class Player {
     ================*/
 
     this.img = new Image()
-    this.img.src = './player/sprites/spritesheet.png'
+      // console.log('Loading image from:', imageSrc); 
+    this.img.src = "./assets/sprites/player/player.png"
 
     // Inventory
     this.weapon = null;
