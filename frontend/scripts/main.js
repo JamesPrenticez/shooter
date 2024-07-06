@@ -2,12 +2,28 @@
 import { createCanvas } from "./canvas/canvas.js";
 import { createNewPlayer } from "./player/player.js"
 import { createNewWeapon } from "./weapons/weapon.js";
+import { createNewMap } from "./maps/map.js";
+import { parsedCollisionsLevelOne } from "./maps/collisions.js";
+
+const tileSize = {
+  w: 64,
+  h: 64,
+}
 
 const canvas = createCanvas({ 
   element: document.querySelector("canvas"),
-  width: 64 * 16, //1024,
-  height: 64 * 9, // 576
+  width: tileSize.w * 16, //1024,
+  height: tileSize.h * 9, // 576
 });
+
+const map = createNewMap({
+  ctx: canvas.ctx,
+  name: "level1",
+  tileSize: tileSize,
+  x: canvas.width / 2,
+  y: canvas.height / 2,
+  collisionValues: parsedCollisionsLevelOne
+})
 
 const player = createNewPlayer({
   ctx: canvas.ctx,
@@ -35,6 +51,9 @@ function gameLoop(){
   canvas.clear();
   canvas.ctx.imageSmoothingEnabled = true;
   canvas.drawFrameRate();
+
+  // Map
+  map.update();
 
   // Player
   player.update();
