@@ -19,6 +19,15 @@ class Player {
     this.friction = this.walkFriction;
     this.runFriction = 0.98;
 
+    // Gravity and ground detection
+    this.gravity = .12;
+    this.isOnGround = false;
+    this.isCrouching = false;
+    this.isJumping = false;
+
+    // Jump
+    // this.jumpVelocity = -100;
+
     // Player Controls
     this.playerControls();
 
@@ -113,17 +122,6 @@ class Player {
       this.weapon.draw(this.ctx, this.position.x, this.position.y, this.facingRight);
     }
 
-    // this.ctx.drawImage(
-    //   this.img, // image
-    //   sourceX, // source x
-    //   sourceY, // source y (assuming the sprite is in the first row)
-    //   512, // source width
-    //   512, // source height
-    //   this.position.x - (32), // x
-    //   this.position.y - (32), // y
-    //   this.frameWidth * this.frameScale, // destination width
-    //   this.frameHeight * this.frameScale, // destination height
-    // );
   };
 
   drawPlayerName = () => {
@@ -159,6 +157,11 @@ class Player {
   physics = () => {
     this.velocity.x *= this.friction;
     this.velocity.y *= this.friction;
+
+    // Apply gravity
+    if (!this.isOnGround) {
+      this.velocity.y += this.gravity;
+    }
     
     // Small threshold to avoid floating-point precision issues
     const threshold = 0.01;
@@ -169,61 +172,51 @@ class Player {
     if (Math.abs(this.velocity.y) < threshold) {
         this.velocity.y = 0;
     }
-
-    // Applying the friction might result in slightly less than maxSpeed
-    // So we normalize it again after friction is applied if it is close to maxSpeed
-    // if (this.speed > this.maxSpeed - threshold) {
-    //     const ratio = this.maxSpeed / this.speed;
-    //     this.velocity.x *= ratio;
-    //     this.velocity.y *= ratio;
-    //     this.speed = this.maxSpeed; // Ensure speed is exactly maxSpeed
-    // }
-
   }
 
   movePlayer = () => {
     let accelerationX = 0;
-    let accelerationY = 0;
+    // let accelerationY = 0; // jump doesnt use acceleration... yet
 
-    if (this.w) {
-        accelerationY -= this.acceleration;
+    if (this.w && this.isOnGround && !this.isCrouching && !this.isJumping) {
+      this.isCrouching = true;
+      setTimeout(() => {
+        this.isOnGround = false;
+        this.isJumping = true;
+        this.isCrouching = false;
+        this.velocity.y -= 20;
+      }, 50);
     }
+
     if (this.a) {
-        accelerationX -= this.acceleration;
+      accelerationX -= this.acceleration;
     }
     if (this.s) {
-        accelerationY += this.acceleration;
+      // do nothing
     }
     if (this.d) {
-        accelerationX += this.acceleration;
+      accelerationX += this.acceleration;
     }
-
-    // Calculate the combined acceleration
-    const combinedAcceleration = Math.sqrt(accelerationX ** 2 + accelerationY ** 2);
-
-    if (combinedAcceleration > 0) {
-      // Normalize acceleration to ensure consistent speed increase
-      accelerationX = (accelerationX / combinedAcceleration) * this.acceleration;
-      accelerationY = (accelerationY / combinedAcceleration) * this.acceleration;
-    }
-
-    this.velocity.x += accelerationX;
-    this.velocity.y += accelerationY;
 
     // Calculate the combined speed
-    this.speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+    this.speed = Math.sqrt(this.velocity.x ** 2);
     this.speed = Math.round(this.speed * 1000) / 1000; 
 
+    // Reduces jumping too high while running
     // Normalize the velocity vector if the speed exceeds maxSpeed
     if (this.speed > this.maxSpeed) {
-        const ratio = this.maxSpeed / this.speed;
-        this.velocity.x *= ratio;
-        this.velocity.y *= ratio;
-        this.speed = this.maxSpeed; // Ensure speed is exactly maxSpeed
+      const ratio = this.maxSpeed / this.speed;
+      this.velocity.x *= ratio;
+      this.velocity.y *= ratio;
+      this.speed = this.maxSpeed;
     }
+    
+    this.velocity.x += accelerationX;
+    // this.velocity.y += accelerationY; // jump doesnt use acceleration... yet
 
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
+
 
     // Handle facing right/left
     if (this.velocity.x > 0) {
@@ -231,124 +224,64 @@ class Player {
     } else if (this.velocity.x < 0) {
       this.facingRight = false;
     }
+
+    // Handle ground collision
+    const groundLevel = 500; // Replace with your actual ground level
+    if (this.position.y + this.radius >= groundLevel) {
+      this.position.y = groundLevel - this.radius;
+      this.velocity.y = 0;
+      this.isOnGround = true;
+      this.isJumping = false;
+    } else {
+      this.isOnGround = false;
+    }
   }
-
   setPlayerAction = () => {
+    if (this.isCrouching){
+      this.action = 'crouch';
+    }
+    else if(this.isJumping) {
+      this.action = 'jump';
+    } else if (this.speed < 0.4) {
+      this.friction = this.walkFriction 
+      this.acceleration = this.baseAcceleration
+      this.action = 'idle';
+    } else if (this.speed <= 1.99) {
+      this.action = 'walk';
+    } else {
+      this.friction = this.runFriction
+      this.action = 'run';
+    }
 
-
-     // Determine the direction for animation purposes
-    //  let direction = '';
-    //  if (this.w) direction += 'up';
-    //  if (this.s) direction += 'down';
-    //  if (this.a) direction += 'left';
-    //  if (this.d) direction += 'right';
- 
-    //  // Update the frame row based on the direction
-    //  switch (direction) {
-    //     case 'up':
-    //       this.action = "walk"
-    //       // this.frameRow = 1;
-    //       break;
-    //     case 'down':
-    //       this.action = "walk"
-    //       // this.frameRow = 1;
-    //       break;
-    //     case 'left':
-    //       this.action = "walk"
-    //       // this.frameRow = 1;
-    //       break;
-    //     case 'right':
-    //       this.action = "walk"
-    //       // this.frameRow = 1;
-    //       break;
-    //     // Add other direction cases if needed
-    //     default:
-    //       this.action = "idle"
-    //       //this.frameRow = 0; // Default to idle frame row
-    //       break;
-    //   }
-
-      // console.log(this.speed)
-
-      if (this.speed < 0.4) {
-        this.friction = this.walkFriction 
-        this.acceleration = this.baseAcceleration
-        this.action = 'idle';
-      } else if (this.speed <= 1.99) {
-        this.action = 'walk';
-      } else {
-        this.friction = this.runFriction
-        this.action = 'run';
-      }
-
-      switch (this.action) {
-        case 'idle':
-          this.frameRow = 0;
-          this.frameLength = 7;
-          break;
-        case 'walk':
-          this.frameRow = 1;
-          this.frameLength = 7;
-          break;
-        case 'run':
-          this.frameRow = 2;
-          this.frameLength = 7;
-          break;
-        // Add other actions if needed
-      }
-  
-    // Determine the direction
-    // let direction = '';
-    // if (this.w) direction += 'up';
-    // if (this.s) direction += 'down';
-    // if (this.a) direction += 'left';
-    // if (this.d) direction += 'right';
-  
-    // switch (direction) {
-    //   case 'upright':
-    //     this.action += '_up_right';
-    //     break;
-    //   case 'upleft':
-    //     this.action += '_up_left';
-    //     break;
-    //   case 'downright':
-    //     this.action += '_down_right';
-    //     break;
-    //   case 'downleft':
-    //     this.action += '_down_left';
-    //     break;
-    //   case 'up':
-    //     this.action += '_up';
-    //     break;
-    //   case 'down':
-    //     this.action += '_down';
-    //     break;
-    //   case 'left':
-    //     this.action += '_left';
-    //     break;
-    //   case 'right':
-    //     this.action += '_right';
-    //     break;
-    //   default:
-    //     // No direction keys are pressed, so keep the action as is
-    //     break;
-    // }
-
-    // switch (this.action) {
-    //   case 'idle':
-    //     this.frameRow = 0;
-    //     this.frameLength = 7;
-    //     break;
-    //   case 'walk':
-    //     this.frameRow = 1;
-    //     this.frameLength = 7;
-    //     break;
-    //   case 'run':
-    //     this.frameRow = 2;
-    //     this.frameLength = 7;
-    //     break;
-    //   // Add other actions if needed
-    // }
+    switch (this.action) {
+      case 'idle':
+        this.frameRow = 0;
+        this.frameLength = 7;
+        break;
+      case 'walk':
+        this.frameRow = 1;
+        this.frameLength = 7;
+        break;
+      case 'run':
+        this.frameRow = 2;
+        this.frameLength = 7;
+        break;
+      case 'crouch':
+        this.frameRow = 3;
+        this.frameColumn = 0;
+        this.frameCurrent = 0;
+        break
+      case 'jump':
+        this.frameRow = 3; 
+        if(this.velocity.y > 2.36){
+          this.frameColumn = 3;
+          this.frameCurrent = 3;
+        } else {
+          this.frameColumn = 1;
+          this.frameCurrent = 1;
+        }
+        break;
+    }
   };
   playerControls(){
     document.addEventListener('keydown', (e) => {
@@ -390,23 +323,8 @@ class Player {
       this.setPlayerAction(); // Update action on key up
     })
   }
-
-
 }
 
 export const createNewPlayer = ({ctx, name, x, y}) => {
   return new Player(ctx, name, x, y);
 };
-
-
-// ctx.drawImage(
-//   this.img, //image
-//   this.width * this.frameX, // source x
-//   this.height * this.frameY, // source y
-//   this.width, // source width
-//   this.height, // source height
-//   this.x, // x
-//   this.y, // y
-//   this.width * 4, // destination width
-//   this.height * 4, // destination height
-// )

@@ -2,14 +2,11 @@
 import { createCanvas } from "./canvas/canvas.js";
 import { createNewPlayer } from "./player/player.js"
 import { createNewWeapon } from "./weapons/weapon.js";
-console.log("hi")
 
 const canvas = createCanvas({ 
   element: document.querySelector("canvas"),
-  // width: 480,
-  // height: 270
-  width: 1042,
-  height: 512
+  width: 64 * 16, //1024,
+  height: 64 * 9, // 576
 });
 
 const player = createNewPlayer({
