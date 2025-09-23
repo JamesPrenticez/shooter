@@ -33,3 +33,23 @@ export class CollisionBlock {
     this.ctx.fillRect(this.position.x, this.position.y, this.w, this.h)
   }
 }
+
+export const createCollisionBlocks = ({collisionValues, tileSize, ctx}) => {
+  let collisionBlocks = [];
+
+  collisionValues.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value === 292) {
+        collisionBlocks.push(new CollisionBlock({
+          ctx,
+          position: {
+            x: x * tileSize.w,
+            y: y * tileSize.h
+          }
+        }));
+      }
+    });
+  });
+
+  return collisionBlocks;
+};

@@ -1,5 +1,5 @@
 class Player {
-  constructor(ctx, name, x, y) {
+  constructor(ctx, name, x, y, collisionValue) {
     this.ctx = ctx;
     this.name = name;
     this.position = {x, y}
@@ -210,6 +210,38 @@ class Player {
       this.isOnGround = false;
     }
   }
+
+  // checkCollisions = () => {
+  //   const tileSize = this.tileSize;
+  //   const map = this.map;
+
+  //   const playerTileX = Math.floor(this.position.x / tileSize);
+  //   const playerTileY = Math.floor(this.position.y / tileSize);
+
+  //   const checkTile = (x, y) => map[y] && map[y][x];
+
+  //   if (checkTile(playerTileX, playerTileY)) {
+  //     if (this.velocity.y > 0) {
+  //       this.position.y = playerTileY * tileSize - this.radius;
+  //       this.velocity.y = 0;
+  //       this.isOnGround = true;
+  //       this.isJumping = false;
+  //     } else if (this.velocity.y < 0) {
+  //       this.position.y = (playerTileY + 1) * tileSize + this.radius;
+  //       this.velocity.y = 0;
+  //     }
+  //   }
+
+  //   if (checkTile(playerTileX - 1, playerTileY) && this.velocity.x < 0) {
+  //     this.position.x = (playerTileX) * tileSize + this.radius;
+  //     this.velocity.x = 0;
+  //   }
+
+  //   if (checkTile(playerTileX + 1, playerTileY) && this.velocity.x > 0) {
+  //     this.position.x = (playerTileX) * tileSize - this.radius;
+  //     this.velocity.x = 0;
+  //   }
+  // };
   
   setPlayerAction = () => {
     if (this.isCrouching){
@@ -258,6 +290,7 @@ class Player {
         break;
     }
   };
+
   playerControls(){
     document.addEventListener('keydown', (e) => {
       switch(e.key){
@@ -300,6 +333,6 @@ class Player {
   }
 }
 
-export const createNewPlayer = ({ctx, name, x, y}) => {
-  return new Player(ctx, name, x, y);
+export const createNewPlayer = ({ctx, name, x, y, collisionValue}) => {
+  return new Player(ctx, name, x, y, collisionValue);
 };

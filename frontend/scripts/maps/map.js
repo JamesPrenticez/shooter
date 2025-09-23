@@ -1,13 +1,12 @@
-import { CollisionBlock } from "./collisions";
 
 class Map {
-  constructor(ctx, name, tileSize, x, y, collisionValues) {
+  constructor(ctx, name, tileSize, x, y, collisionValues, collisionBlocks) {
     this.ctx = ctx;
     this.name = name;
     this.tileSize = tileSize
     this.x = x;
     this.y = y;
-    this.collisonBlocks = [];
+    this.collisonBlocks = collisionBlocks;
     this.collisionValues = collisionValues;
   }
 
@@ -15,23 +14,17 @@ class Map {
     this.drawCollisions();
   }
 
+  drawCollisionBlocks = () => {
+
+  }
+
   drawCollisions = () => {
-    this.collisionValues.forEach((row, y) => {
-      row.forEach((value, x) => {
-        if(value === 292) {
-          this.collisonBlocks = new CollisionBlock({
-            ctx: this.ctx,
-            position: {
-              x: x * this.tileSize.w,
-              y: y * this.tileSize.h
-            }
-          }).draw();
-        }
-      })
+    this.collisonBlocks.forEach((block) => {
+        block.draw();
     })
   }
 }
   
-export const createNewMap = ({ctx, name, tileSize, x, y, collisionValues}) => {
-  return new Map(ctx, name, tileSize, x, y, collisionValues);
+export const createNewMap = ({ctx, name, tileSize, x, y, collisionValues, collisionBlocks}) => {
+  return new Map(ctx, name, tileSize, x, y, collisionValues, collisionBlocks);
 };

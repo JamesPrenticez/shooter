@@ -2,8 +2,9 @@
 import { createCanvas } from "./canvas/canvas.js";
 import { createNewPlayer } from "./player/player.js"
 import { createNewWeapon } from "./weapons/weapon.js";
+// import { createNewMap } from "./maps/map.js";
+import { createCollisionBlocks, parsedCollisionsLevelOne } from "./maps/collisions.js";
 import { createNewMap } from "./maps/map.js";
-import { parsedCollisionsLevelOne } from "./maps/collisions.js";
 
 const tileSize = {
   w: 64,
@@ -16,20 +17,30 @@ const canvas = createCanvas({
   height: tileSize.h * 9, // 576
 });
 
+const collisionBlocks = createCollisionBlocks({
+  ctx: canvas.ctx,
+  collisionValues: parsedCollisionsLevelOne,
+  tileSize: tileSize
+})
+
 const map = createNewMap({
   ctx: canvas.ctx,
   name: "level1",
   tileSize: tileSize,
   x: canvas.width / 2,
   y: canvas.height / 2,
-  collisionValues: parsedCollisionsLevelOne
+  collisionValues: parsedCollisionsLevelOne,
+  collisionBlocks: collisionBlocks,
 })
+
+// console.log(map.collisonBlocks)
 
 const player = createNewPlayer({
   ctx: canvas.ctx,
   name: "player1",
   x: canvas.width / 2,
   y: canvas.height / 2,
+  collisionValues: parsedCollisionsLevelOne
 });
 
 const weapon = createNewWeapon({
